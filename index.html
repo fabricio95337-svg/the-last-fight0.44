@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE LAST FIGHT</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d18;color:white;font-family:Arial;text-align:center}
+header{padding:15px;background:#111b2c;color:#f5bd54;font-size:24px;font-weight:bold}
+canvas{width:100%;max-width:800px;background:#18283b;display:block;margin:auto;touch-action:none}
+.hud{padding:10px;display:flex;justify-content:space-around}
+button{background:#a76a28;color:white;border:2px solid #edbc60;border-radius:12px;padding:13px;font-weight:bold;font-size:16px}
+.controls{display:flex;justify-content:space-around;align-items:center;padding:15px;gap:10px}
+.controls button{min-width:75px;min-height:60px}
+#message{color:#f5bd54;padding:8px}
+</style>
+</head>
+<body>
+<header>⚔ THE LAST FIGHT ⚔</header>
+<div class="hud">
+<span>❤️ Vida: <b id="hp">100</b></span>
+<span>⭐ Nivel: 1</span>
+<span>💰 Oro: <b id="gold">0</b></span>
+</div>
+<canvas id="game" width="800" height="450"></canvas>
+<div id="message">¡Defiende el reino!</div>
+<div class="controls">
+<button id="left">◀</button>
+<button id="attack">⚔ ATACAR</button>
+<button id="right">▶</button>
+<button id="jump">▲</button>
+</div>
+<button onclick="restart()">REINICIAR PARTIDA</button>
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+let player={x:100,y:320,hp:100};
+let enemy={x:620,y:320,hp:100};
+let gold=0,attack=false,dead=false;
+let keys={};
+function draw(){
+ctx.clearRect(0,0,800,450);
+let sky=ctx.createLinearGradient(0,0,0,450);
+sky.addColorStop(0,"#101d36");
+sky.addColorStop(1,"#344a46");
+ctx.fillStyle=sky;ctx.fillRect(0,0,800,450);
+// Luna
+ctx.fillStyle="#f4dba0";ctx.beginPath();ctx.arc(680,75,35,0,7);ctx.fill();
+// Montañas
+ctx.fillStyle="#172b32";
+ctx.beginPath();ctx.moveTo(0,320);ctx.lineTo(160,120);ctx.lineTo(300,320);ctx.lineTo(480,140);ctx.lineTo(700,320);ctx.lineTo(800,200);ctx.lineTo(800,450);ctx.lineTo(0,450);ctx.fill();
+// Suelo
+ctx.fillStyle="#263b2d";ctx.fillRect(0,370,800,80);
+ctx.fillStyle="#52734b";ctx.fillRect(0,370,800,5);
+// Personaje
+ctx.fillStyle="#36a8ed";ctx.fillRect(player.x,300,38,68);
+ctx.fillStyle="#f0c49a";ctx.beginPath();ctx.arc(player.x+19,286,17,0,7);ctx.fill();
+ctx.fillStyle="#d5e6f3";ctx.fillRect(player.x+26,335,32,7);
+ctx.fillStyle="#fff";ctx.fillRect(player.x+5,375,12,15);ctx.fillRect(player.x+25,375,12,15);
+// Enemigo
+if(enemy.hp>0){
+ctx.fillStyle="#a43c48";ctx.fillRect(enemy.x,300,40,68);
+ctx.fillStyle="#e0a17e";ctx.beginPath();ctx.arc(enemy.x+20,285,17,0,7);ctx.fill();
+ctx.fillStyle="#ddd";ctx.fillRect(enemy.x-5,330,50,7);
+}
+// Barras de vida
+ctx.fillStyle="#333";ctx.fillRect(20,25,180,15);
+ctx.fillStyle="#29d45b";ctx.fillRect(20,25,180*player.hp/100,15);
+ctx.fillStyle="#333";ctx.fillRect(600,25,180,15);
+ctx.fillStyle="#ed394a";ctx.fillRect(600,25,180*enemy.hp/100,15);
+ctx.fillStyle="white";ctx.font="15px Arial";
+ctx.fillText("HÉROE",20,18);ctx.fillText("GUARDIÁN OSCURO",600,18);
+if(dead||enemy.hp<=0){
+ctx.fillStyle="#000a";ctx.fillRect(0,0,800,450);
+ctx.fillStyle="#f5bd54";ctx.font="bold 40px Arial";
+ctx.fillText(enemy.hp<=0?"¡VICTORIA!":"FIN DE LA PARTIDA",180,220);
+}
+}
+function update(){
+if(!dead&&enemy.hp>0){
+if(keys.left)player.x=Math.max(0,player.x-4);
+if(keys.right)player.x=Math.min(750,player.x+4);
+if(Math.abs(player.x-enemy.x)<65&&enemy.hp>0){
+enemy.x+=enemy.x>player.x?2:-2;
+if(Math.random()<0.012){player.hp-=5;
+if(player.hp<=0){player.hp=0;dead=true;}
+document.getElementById("hp").textContent=player.hp;
+}}
+}
+draw();requestAnimationFrame(update);
+}
+function hit(){
+if(dead||enemy.hp<=0)return;
+if(Math.abs(player.x-enemy.x)<100){
+enemy.hp=Math.max(0,enemy.hp-20);
+if(enemy.hp===0){gold+=50;document.getElementById("gold").textContent=gold;}
+}
+draw();
+}
+function bind(id,key){
+let b=document.getElementById(id);
+b.onpointerdown=e=>{e.preventDefault();keys[key]=true};
+b.onpointerup=b.onpointerleave=b.onpointercancel=()=>keys[key]=false;
+}
+bind("left","left");bind("right","right");
+document.getElementById("attack").onclick=hit;
+document.getElementById("jump").onclick=()=>{player.y=270;setTimeout(()=>player.y=320,400)};
+function restart(){
+player={x:100,y:320,hp:100};
+enemy={x:620,y:320,hp:100};
+gold=0;dead=false;
+document.getElementById("hp").textContent=100;
+document.getElementById("gold").textContent=0;
+}
+update();
+</script>
+</body>
+</html>
